@@ -399,6 +399,24 @@ body.dark .theme-row-wrap { display: none; }
 .dup-btns button { background: var(--surface); border: 1px solid #f0d070; border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #7a5c00; transition: background 0.15s; }
 .dup-btns button:hover { background: #fff0b0; }
 
+/* ── Share modal ── */
+.share-modal { max-width: 440px; }
+.share-intro { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.share-option {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 12px; border-radius: 12px; cursor: pointer;
+  transition: background 0.15s; border: 1px solid transparent;
+  margin-bottom: 8px;
+}
+.share-option:hover { background: var(--accent-light); border-color: var(--border); }
+.share-icon { width: 38px; height: 38px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.share-option-text { flex: 1; min-width: 0; }
+.share-option-title { font-size: 0.9rem; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.share-option-body { font-size: 0.78rem; color: var(--muted); }
+.share-chevron { font-size: 1.3rem; color: var(--muted); font-weight: 300; flex-shrink: 0; transition: color 0.15s; }
+.share-option:hover .share-chevron { color: var(--accent); }
+.share-feedback { font-size: 0.8rem; color: var(--accent); text-align: center; min-height: 1.2em; margin-top: 4px; font-weight: 500; }
+
 /* ── Help modal ── */
 .help-modal { max-width: 480px; }
 .help-intro { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
@@ -419,6 +437,7 @@ body.dark .theme-row-wrap { display: none; }
 </header>
 
 <div class="top-controls">
+  <button class="icon-btn" id="share-btn" onclick="toggleShare()" title="Share My Timeline">↗</button>
   <button class="icon-btn" id="help-btn" onclick="toggleHelp()" title="How to use">?</button>
   <button class="icon-btn" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode">◐</button>
   <button class="icon-btn gear-btn" id="gear-btn" onclick="toggleOptions()" title="Options">⚙</button>
@@ -542,46 +561,87 @@ body.dark .theme-row-wrap { display: none; }
   </div>
 </div>
 
+<!-- Share modal -->
+<div class="modal-overlay" id="share-overlay" onclick="handleShareOverlayClick(event)">
+  <div class="modal share-modal">
+    <h2>Share My Timeline</h2>
+    <p class="share-intro">Know someone who'd love their own timeline? Send them the link — they'll get a blank page they can make their own, with no sign-up required.</p>
+
+    <div class="share-option" onclick="shareViaEmail()">
+      <div class="share-icon">✉</div>
+      <div class="share-option-text">
+        <div class="share-option-title">Send via email</div>
+        <div class="share-option-body">Opens your mail app with a ready-to-send message</div>
+      </div>
+      <div class="share-chevron">›</div>
+    </div>
+
+    <div class="share-option" onclick="copyShareMessage()">
+      <div class="share-icon">💬</div>
+      <div class="share-option-text">
+        <div class="share-option-title">Copy message</div>
+        <div class="share-option-body">Paste into WhatsApp, Slack, iMessage, or any app</div>
+      </div>
+      <div class="share-chevron">›</div>
+    </div>
+
+    <div class="share-option" onclick="copyShareLink()">
+      <div class="share-icon">🔗</div>
+      <div class="share-option-text">
+        <div class="share-option-title">Copy link only</div>
+        <div class="share-option-body">Just the URL, nothing else</div>
+      </div>
+      <div class="share-chevron" id="share-link-check">›</div>
+    </div>
+
+    <div class="share-feedback" id="share-feedback"></div>
+
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="toggleShare()">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Help modal -->
 <div class="modal-overlay" id="help-overlay" onclick="handleHelpOverlayClick(event)">
   <div class="modal help-modal">
     <h2>How to use My Timeline</h2>
-    <p class="help-intro">My Timeline is a personal countdown page that lives in your browser. Add the moments that matter — trips, deadlines, milestones, celebrations — and watch the time count down in real time. Everything is saved locally on your device, so it's always there when you open it, with no account or internet connection needed.</p>
+    <p class="help-intro">A personal countdown page that lives in your browser — no account, no internet needed. Add events, watch the time count down. Your data is stored locally, so clearing your browser data or switching browsers will remove your events.</p>
     <div class="help-section">
       <div class="help-icon">+</div>
-      <div><div class="help-title">Adding events</div><div class="help-body">Tap <strong>Add Event</strong> at the bottom. Give it a name, a target date, and optionally a time. Pick a colour to assign it to a category. Tap Save.</div></div>
+      <div><div class="help-title">Adding events</div><div class="help-body">Tap <strong>Add Event</strong>, fill in a name and date, optionally a time and category colour, then hit Save.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">⊙</div>
-      <div><div class="help-title">Pinning</div><div class="help-body">Hover over an event card to reveal its action buttons. The <strong>⊙ pin</strong> button keeps an event at the top of the list regardless of date order.</div></div>
+      <div><div class="help-title">Pinning</div><div class="help-body">Hover a card to reveal action buttons. <strong>⊙ Pin</strong> keeps an event at the top regardless of date.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">✎</div>
-      <div><div class="help-title">Editing &amp; deleting</div><div class="help-body">Hover a card to reveal <strong>✎ edit</strong> and <strong>✕ delete</strong>. Deleted events can be recovered with <strong>Undo</strong> for a few seconds after deletion.</div></div>
+      <div><div class="help-title">Editing &amp; deleting</div><div class="help-body">Hover a card for <strong>✎ edit</strong> and <strong>✕ delete</strong>. Deleted events can be recovered via <strong>Undo</strong> for a few seconds.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon" style="font-size:0.9rem">●●</div>
-      <div><div class="help-title">Categories &amp; filtering</div><div class="help-body">Each colour is a category. Once you have two or more, a row of coloured filter chips appears above the timeline — tap any chip to show or hide that category. Name your categories in <strong>⚙ Options → Category names</strong>.</div></div>
+      <div><div class="help-title">Categories &amp; filtering</div><div class="help-body">Each colour is a category. With two or more, filter chips appear above the timeline to show or hide categories. Name them in <strong>⚙ Options → Category names</strong>.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">⚙</div>
-      <div><div class="help-title">Options</div><div class="help-body">The gear icon top-right lets you change the <strong>count unit</strong> (minutes, hours, days, weeks), toggle decimal places, hide past events, sort by name or due date, and switch colour themes.</div></div>
+      <div><div class="help-title">Options</div><div class="help-body">Change the <strong>count unit</strong>, toggle decimals, hide past events, sort, and switch themes.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">◐</div>
-      <div><div class="help-title">Dark mode</div><div class="help-body">The half-circle button toggles dark mode. Your preference is saved automatically.</div></div>
+      <div><div class="help-title">Dark mode</div><div class="help-body">Toggles dark mode. Saved automatically.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">📅</div>
-      <div><div class="help-title">Exporting</div><div class="help-body">In <strong>⚙ Options → Export</strong> you can download all events as a <strong>.ics</strong> calendar file, importable into Apple Calendar, Google Calendar, and most other apps. This is a one-time snapshot, not a live sync.</div></div>
+      <div><div class="help-title">Exporting</div><div class="help-body">Download all events as a <strong>.ics</strong> file from <strong>⚙ Options → Export</strong>, importable into Apple Calendar, Google Calendar, and others. One-time snapshot, not a live sync.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">🎉</div>
-      <div><div class="help-title">Celebrations</div><div class="help-body">When a countdown reaches zero, the page celebrates with confetti. You can then dismiss the event or remove it from the timeline.</div></div>
+      <div><div class="help-title">Celebrations</div><div class="help-body">When a countdown hits zero, confetti fires. Dismiss the event or remove it from the timeline.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">🕐</div>
-      <div><div class="help-title">Timezones</div><div class="help-body">By default events use your device's local time. If you're scheduling for a different timezone — say, a flight departure in London — pick the specific zone in the event form and the countdown will adjust correctly.</div></div>
+      <div><div class="help-title">Timezones</div><div class="help-body">Events use your device's local time by default. Pick a specific timezone in the event form when scheduling across zones.</div></div>
     </div>
     <div class="modal-btns">
       <button class="btn-save" onclick="toggleHelp()">Got it</button>
@@ -732,6 +792,50 @@ function saveOptions(){
   opts.noDecimals = !document.getElementById('opt-nodec').checked;
   opts.decPlaces  = Math.max(1, Math.min(8, parseInt(document.getElementById('opt-decplaces').value)||5));
   localStorage.setItem(OPT_KEY, JSON.stringify(opts));
+}
+
+// ── Share ─────────────────────────────────────────────────────────────────────
+const SHARE_URL = 'https://schoenerma.github.io/mytimeline/';
+const SHARE_MSG = `Hey! I've been using this little browser page called My Timeline to count down to things I'm looking forward to. You can get your own copy here: ${SHARE_URL}
+
+Just open the link and add your own events — no sign-up needed. You can even set it as your browser start page so you see it every day.`;
+
+function toggleShare(){
+  const overlay=document.getElementById('share-overlay');
+  overlay.classList.toggle('open');
+  document.getElementById('share-feedback').textContent='';
+  document.getElementById('share-link-check').textContent='›';
+  // close others if open
+  document.getElementById('options-panel').classList.remove('open');
+  document.getElementById('gear-btn').classList.remove('open');
+  document.getElementById('help-overlay').classList.remove('open');
+}
+function handleShareOverlayClick(e){ if(e.target===document.getElementById('share-overlay')) toggleShare(); }
+
+function shareViaEmail(){
+  const subject=encodeURIComponent('My Timeline — personal countdown page');
+  const body=encodeURIComponent(SHARE_MSG);
+  window.location.href=`mailto:?subject=${subject}&body=${body}`;
+}
+function copyShareMessage(){
+  navigator.clipboard.writeText(SHARE_MSG).then(()=>{
+    showShareFeedback('Message copied to clipboard ✓');
+  }).catch(()=>{
+    showShareFeedback('Copy failed — please copy the link manually');
+  });
+}
+function copyShareLink(){
+  navigator.clipboard.writeText(SHARE_URL).then(()=>{
+    document.getElementById('share-link-check').textContent='✓';
+    showShareFeedback('Link copied ✓');
+  }).catch(()=>{
+    showShareFeedback('Copy failed — please copy the link manually');
+  });
+}
+function showShareFeedback(msg){
+  const el=document.getElementById('share-feedback');
+  el.textContent=msg;
+  setTimeout(()=>{ el.textContent=''; }, 3000);
 }
 
 function toggleHelp(){
@@ -1110,7 +1214,7 @@ function updateDate(){ document.getElementById('current-date').textContent=new D
 
 // ── Keyboard shortcuts ────────────────────────────────────────────────────────
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); document.getElementById('help-overlay').classList.remove('open'); }
+  if(e.key==='Escape'){ closeModal(); document.getElementById('help-overlay').classList.remove('open'); document.getElementById('share-overlay').classList.remove('open'); }
   if(e.key==='Enter'&&document.getElementById('modal-overlay').classList.contains('open')) saveEvent();
 });
 
