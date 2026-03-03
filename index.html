@@ -20,6 +20,7 @@
   --danger: #d94f4f;
   --shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
   --spine-color: #ddd8d0;
+  --border-subtle: rgba(0,0,0,0.07);
 }
 body.dark {
   --bg: #1e1e20;
@@ -32,6 +33,7 @@ body.dark {
   --danger: #e05555;
   --shadow: 0 2px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
   --spine-color: #f0ece6;
+  --border-subtle: rgba(255,255,255,0.07);
 }
 
 /* ── Base ── */
@@ -96,12 +98,15 @@ header p { margin-top: 6px; color: var(--muted); font-size: 0.9rem; font-weight:
   font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
   color: var(--muted); margin-bottom: 8px; font-weight: 500;
 }
-.opt-section { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; }
+.opt-section { margin-top: 12px; padding-top: 12px; }
+.opt-section h3 { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 0; }
 .opt-row {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 7px 0; border-bottom: 1px solid var(--border); gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid var(--border-subtle); gap: 10px;
 }
 .opt-row:last-child { border-bottom: none; }
+.opt-row + .opt-section { margin-top: 0; }
+.opt-row:has(+ .opt-section) { border-bottom: none; }
 .opt-label { font-size: 0.85rem; color: var(--text); font-weight: 400; flex: 1; }
 .opt-row input[type=number] {
   width: 52px; border: 1px solid var(--border); border-radius: 7px;
@@ -138,6 +143,7 @@ header p { margin-top: 6px; color: var(--muted); font-size: 0.9rem; font-weight:
 
 /* Theme swatches — hidden in dark mode */
 body.dark .theme-row-wrap { display: none; }
+body.dark .opt-row.filter-row-wrap { border-bottom: none; }
 .theme-swatches { display: flex; gap: 7px; flex-wrap: wrap; width: 100%; margin-top: 2px; }
 .theme-swatch {
   flex: 1 1 calc(20% - 6px); min-width: 42px; height: 48px;
@@ -147,7 +153,7 @@ body.dark .theme-row-wrap { display: none; }
 }
 .theme-swatch.selected { border-color: var(--text); transform: scale(1.06); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 .theme-swatch:not(.selected):hover { border-color: var(--muted); transform: scale(1.04); }
-.opt-row.theme-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+.opt-row.theme-row { flex-direction: column; align-items: flex-start; gap: 8px; border-bottom: none; }
 
 /* Toggle switch */
 .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
@@ -183,12 +189,19 @@ body.dark .theme-row-wrap { display: none; }
 
 /* ── Category filter bar ── */
 .cat-filter-bar {
-  display: none;
+  display: flex;
   justify-content: center; gap: 8px; flex-wrap: wrap;
-  margin-bottom: 18px;
-  animation: fadeUp 0.4s ease both;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+  transition: max-height 0.35s ease, opacity 0.3s ease, margin-bottom 0.35s ease;
 }
-.cat-filter-bar.visible { display: flex; }
+.cat-filter-bar.visible {
+  max-height: 80px;
+  opacity: 1;
+  margin-bottom: 18px;
+}
 .cfc {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 12px 6px 8px; border-radius: 20px; font-size: 0.8rem;
@@ -214,6 +227,7 @@ body.dark .theme-row-wrap { display: none; }
 .timeline-spine {
   position: relative; display: flex; flex-direction: column;
   align-items: center; width: 620px; max-width: 100%;
+  transition: gap 0.38s ease;
 }
 .timeline-spine.has-events::before {
   content: ''; position: absolute; left: 50%; top: -20px; bottom: 36px;
@@ -232,11 +246,6 @@ body.dark .theme-row-wrap { display: none; }
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@keyframes flyOut {
-  0%   { transform:translateX(0) rotate(0deg); opacity:1; max-height:200px; margin-bottom:8px; }
-  40%  { transform:translateX(60px) rotate(3deg); opacity:0.6; }
-  100% { transform:translateX(120vw) rotate(8deg); opacity:0; max-height:0; margin-bottom:0; }
-}
 @keyframes celebPop {
   0%   { transform: scale(1); }
   15%  { transform: scale(1.06); box-shadow: 0 0 0 3px var(--accent), 0 12px 40px rgba(201,96,58,0.3); }
@@ -249,7 +258,6 @@ body.dark .theme-row-wrap { display: none; }
 }
 
 .timeline-spine.no-anim .card { animation: none !important; opacity: 1 !important; transform: none !important; }
-.tl-row.removing { overflow: hidden; animation: flyOut 0.45s cubic-bezier(0.4,0,0.8,0.6) forwards; }
 
 .card {
   background: var(--surface); border: 1px solid var(--border);
@@ -299,6 +307,167 @@ body.dark .theme-row-wrap { display: none; }
 .card-actions .pin-btn:hover  { color: var(--accent); border-color: var(--accent); }
 .card-actions .pin-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
 
+body.dark .card { background: #363640; }
+
+
+/* ── Import banner ── */
+.import-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  background: var(--text); color: var(--bg);
+  padding: 12px 20px;
+  animation: fadeDown 0.3s ease both;
+}
+@keyframes fadeDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.import-inner {
+  max-width: 620px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex-wrap: wrap;
+}
+.import-text { display: flex; flex-direction: column; gap: 2px; }
+.import-text strong { font-size: 0.9rem; font-weight: 600; }
+.import-text span { font-size: 0.8rem; opacity: 0.75; }
+.import-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.import-btn-yes {
+  background: var(--bg); color: var(--text);
+  border: none; border-radius: 20px; padding: 6px 16px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.import-btn-yes:hover { opacity: 0.85; }
+.import-btn-no {
+  background: transparent; color: var(--bg);
+  border: 1px solid rgba(255,255,255,0.35); border-radius: 20px; padding: 6px 16px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+  cursor: pointer; transition: background 0.15s;
+}
+.import-btn-no:hover { background: rgba(255,255,255,0.1); }
+@media (max-width: 540px) {
+  .import-inner { flex-direction: column; align-items: flex-start; }
+}
+
+/* ── Search bar ── */
+.search-wrap {
+  display: flex; justify-content: center;
+  margin-bottom: 32px;
+  animation: fadeUp 0.5s ease 0.1s both;
+}
+.search-form {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; max-width: 520px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 50px; padding: 10px 20px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.search-form:focus-within {
+  border-color: var(--muted);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+}
+.search-icon { font-size: 1.2rem; color: var(--muted); flex-shrink: 0; line-height: 1; }
+.search-input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-family: 'DM Sans', sans-serif; font-size: 1rem;
+  color: var(--text); min-width: 0;
+}
+.search-input::placeholder { color: var(--muted); }
+
+/* ── Sync ── */
+.sync-note { font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+.sync-link { color: var(--accent); text-decoration: none; font-size: 0.78rem; }
+.sync-link:hover { text-decoration: underline; }
+.sync-danger { color: var(--danger) !important; }
+.sync-id-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; background: var(--bg); border-radius: 8px; padding: 7px 10px; }
+.sync-id-val { font-size: 0.72rem; font-family: monospace; color: var(--text); flex: 1; word-break: break-all; }
+.sync-copy-id { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1rem; padding: 0 2px; transition: color 0.15s; }
+.sync-copy-id:hover { color: var(--accent); }
+.sync-now-btn { margin-top: 10px; width: 100%; justify-content: center; }
+.sync-status { font-size: 0.75rem; color: var(--muted); margin-top: 6px; min-height: 1em; transition: color 0.2s; }
+.sync-status.error { color: var(--danger); }
+.sync-status.ok { color: #5a9e6b; }
+body.dark .sync-status.ok { color: #7cc48a; }
+
+/* Sync modals */
+.sync-field { margin-bottom: 14px; }
+.sync-field label { display: block; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.sync-field input { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 9px 13px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s; }
+.sync-field input:focus { border-color: var(--accent); }
+.sync-pw-wrap { position: relative; }
+.sync-pw-wrap input { padding-right: 40px; }
+.sync-pw-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); font-size: 0.85rem; }
+.sync-warn { background: #fff8e6; border: 1px solid #f0d080; border-radius: 8px; padding: 10px 12px; font-size: 0.78rem; color: #7a6020; line-height: 1.5; margin-bottom: 14px; }
+body.dark .sync-warn { background: #2a2310; border-color: #6a5010; color: #c8a840; }
+.sync-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Mobile responsive cards ── */
+@media (max-width: 540px) {
+  body { padding: 36px 12px 80px; }
+
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+    width: 100%;
+  }
+  .card-left { width: 100%; }
+  .card-title {
+    font-size: 1.1rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    max-width: 100%;
+    line-height: 1.3;
+  }
+  .card-date { font-size: 0.8rem; white-space: normal; }
+  .card-right {
+    width: 100%;
+    justify-content: flex-start;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 8px;
+  }
+  .unit-value { font-size: 1.4rem; }
+  .unit-int { width: auto; text-align: left; }
+  .countdown-wrap { justify-content: flex-start; }
+  .unit-label { font-size: 0.7rem; }
+
+  .timeline-spine { width: 100%; }
+  .top-controls { top: 12px; right: 12px; gap: 6px; }
+  .icon-btn { width: 32px; height: 32px; font-size: 13px; }
+
+  .modal { padding: 24px 20px; }
+  .options-panel { width: calc(100vw - 24px); right: 12px; }
+  .search-form { padding: 8px 16px; }
+  .search-input { font-size: 0.95rem; }
+}
+
+@keyframes pulse-invite {
+  0%   { box-shadow: 0 4px 14px rgba(0,0,0,0.12), 0 0 0 0 rgba(201,96,58,0.4); transform: translateY(-1px); }
+  60%  { box-shadow: 0 4px 14px rgba(0,0,0,0.12), 0 0 0 12px rgba(201,96,58,0); transform: translateY(-1px); }
+  100% { box-shadow: 0 4px 14px rgba(0,0,0,0.12), 0 0 0 0 rgba(201,96,58,0); transform: translateY(-1px); }
+}
+.add-btn.invite {
+  background: var(--accent);
+  animation: pulse-invite 1.8s ease-out infinite;
+}
+@keyframes collapseOut {
+  0%   { opacity: 1; max-height: 200px; margin-bottom: 8px; }
+  35%  { opacity: 0; }
+  100% { opacity: 0; max-height: 0; margin-bottom: 0; }
+}
+.tl-row {
+  transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+}
+.tl-row.removing {
+  overflow: hidden;
+  animation: collapseOut 0.38s ease-in-out forwards;
+
+  /* Trigger layout transition on siblings via a grid/flex parent */
+  pointer-events: none;
+}
 /* ── Confetti ── */
 .confetti-piece { position: fixed; width: 8px; height: 8px; border-radius: 2px; pointer-events: none; z-index: 9999; will-change: transform, opacity; }
 
@@ -341,7 +510,7 @@ body.dark .theme-row-wrap { display: none; }
 .btn-save { background: var(--text); color: var(--bg); }
 .btn-save:hover { background: var(--accent); }
 
-/* ── Event modal fields ── */
+/* ── Milestone modal fields ── */
 .field { margin-bottom: 18px; }
 .field label { display: block; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
 .field input, .field select {
@@ -367,7 +536,7 @@ body.dark .theme-row-wrap { display: none; }
   appearance: none; -webkit-appearance: none;
   transition: border-color 0.15s; width: auto;
 }
-.time-tz-row input[type=time] { flex: 0 0 120px; color: var(--muted); }
+.time-tz-row input[type=time] { flex: 0 0 90px; color: var(--muted); }
 .time-tz-row input[type=time]:valid { color: var(--text); }
 .time-tz-row select { flex: 1; color: var(--muted); }
 .time-tz-row select.tz-selected { color: var(--text); }
@@ -380,7 +549,7 @@ body.dark .theme-row-wrap { display: none; }
   width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: none;
   transition: transform 0.12s, box-shadow 0.12s; flex-shrink: 0;
 }
-.color-swatch.selected { box-shadow: 0 0 0 3px var(--text); transform: scale(1.15); }
+.color-swatch.selected { box-shadow: 0 0 0 3px var(--text); }
 .color-cat-label { font-size: 0.78rem; color: var(--muted); font-style: italic; margin-top: 6px; min-height: 1em; }
 .new-cat-row {
   display: flex; align-items: center; gap: 8px; margin-top: 8px;
@@ -415,13 +584,63 @@ body.dark .theme-row-wrap { display: none; }
 .share-option-body { font-size: 0.78rem; color: var(--muted); }
 .share-chevron { font-size: 1.3rem; color: var(--muted); font-weight: 300; flex-shrink: 0; transition: color 0.15s; }
 .share-option:hover .share-chevron { color: var(--accent); }
+.share-checklist {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-bottom: 10px; max-height: 220px; overflow-y: auto;
+}
+.share-check-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px; border-radius: 8px; cursor: pointer;
+  transition: background 0.12s; user-select: none;
+}
+.share-check-item:hover { background: var(--accent-light); }
+.share-check-item input[type=checkbox] {
+  width: 15px; height: 15px; flex-shrink: 0; cursor: pointer;
+  accent-color: var(--accent);
+}
+.share-check-name { font-size: 0.88rem; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.share-check-date { font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
+.share-check-empty { font-size: 0.82rem; color: var(--muted); padding: 8px 10px; font-style: italic; }
+.share-copy-btn {
+  width: 100%; padding: 10px; border-radius: 10px;
+  background: var(--text); color: var(--bg);
+  border: none; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500;
+  cursor: pointer; transition: background 0.15s, opacity 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 4px;
+}
+.share-copy-btn:hover { background: var(--accent); }
+.share-copy-btn:disabled { opacity: 0.4; cursor: default; }
+.share-section-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+.acc-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+.acc-header {
+  width: 100%; background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 16px; gap: 12px; text-align: left;
+  transition: background 0.15s;
+}
+.acc-header:hover { background: var(--accent-light); }
+.acc-header-left { display: flex; flex-direction: column; gap: 2px; }
+.acc-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+.acc-subtitle { font-size: 0.75rem; color: var(--muted); }
+.acc-chevron {
+  font-size: 1.2rem; color: var(--muted); flex-shrink: 0;
+  transition: transform 0.2s; display: inline-block;
+}
+.acc-item.open .acc-chevron { transform: rotate(90deg); }
+.acc-body {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.2s ease;
+  padding: 0 16px;
+}
+.acc-item.open .acc-body { max-height: 600px; padding: 0 16px 14px; }
 .share-feedback { font-size: 0.8rem; color: var(--accent); text-align: center; min-height: 1.2em; margin-top: 4px; font-weight: 500; }
 
 /* ── Help modal ── */
 .help-modal { max-width: 480px; }
 .help-intro { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 .help-section { display: flex; gap: 16px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); }
-.help-section:last-of-type { border-bottom: none; }
+.help-modal .help-section:has(+ .modal-btns) { border-bottom: none; }
 .help-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
 .help-title { font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
 .help-body { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
@@ -431,20 +650,37 @@ body.dark .theme-row-wrap { display: none; }
 </head>
 <body>
 
+<div class="import-banner" id="import-banner" style="display:none">
+  <div class="import-inner">
+    <div class="import-text">
+      <strong id="import-title">Shared milestones</strong>
+      <span id="import-desc">Import these milestones into your timeline?</span>
+    </div>
+    <div class="import-actions">
+      <button class="import-btn-yes" onclick="confirmImport()">Import</button>
+      <button class="import-btn-no" onclick="dismissImport()">Dismiss</button>
+    </div>
+  </div>
+</div>
+
 <header>
   <h1>My Timeline</h1>
   <p id="current-date"></p>
 </header>
 
 <div class="top-controls">
-  <button class="icon-btn" id="share-btn" onclick="toggleShare()" title="Share My Timeline">↗</button>
-  <button class="icon-btn" id="help-btn" onclick="toggleHelp()" title="How to use">?</button>
   <button class="icon-btn" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode">◐</button>
+  <button class="icon-btn" id="share-btn" onclick="toggleShare()" title="Share My Timeline"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M7 8l5-5 5 5"/><path d="M4 14v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/></svg></button>
+  <button class="icon-btn" id="help-btn" onclick="toggleHelp()" title="How to use">?</button>
   <button class="icon-btn gear-btn" id="gear-btn" onclick="toggleOptions()" title="Options">⚙</button>
 </div>
 
 <div class="options-panel" id="options-panel">
   <h3>Display</h3>
+  <div class="opt-row">
+    <span class="opt-label">Show search bar</span>
+    <label class="toggle"><input type="checkbox" id="opt-searchbar" onchange="saveOptions()"><div class="toggle-track"></div></label>
+  </div>
   <div class="opt-row">
     <span class="opt-label">Show decimals</span>
     <label class="toggle"><input type="checkbox" id="opt-nodec" onchange="saveOptions()"><div class="toggle-track"></div></label>
@@ -483,6 +719,35 @@ body.dark .theme-row-wrap { display: none; }
     <button class="opt-export-btn" onclick="exportICS()">📅 Export to Calendar (.ics)</button>
     <p class="export-note">Snapshot export — not a live sync.</p>
   </div>
+  <div class="opt-section" id="sync-section">
+    <h3>Sync</h3>
+    <div id="sync-ui-setup">
+      <p class="sync-note">Sync your timeline across devices using a Sync ID and password. <strong>Keep both safe — they cannot be recovered if lost.</strong></p>
+      <button class="opt-export-btn" onclick="openSyncSetup()">☁ Set up sync</button>
+      <p class="sync-note" style="margin-top:6px">Already have a Sync ID? <a href="#" class="sync-link" onclick="openSyncConnect(event)">Connect this device</a></p>
+    </div>
+    <div id="sync-ui-active" style="display:none">
+      <div class="sync-id-row">
+        <span class="opt-label" style="font-size:0.75rem">SYNC ID</span>
+        <span id="sync-id-display" class="sync-id-val"></span>
+        <button class="sync-copy-id" onclick="copySyncId()" title="Copy Sync ID">⧉</button>
+      </div>
+      <div class="opt-row" style="margin-top:8px">
+        <span class="opt-label">Remember password</span>
+        <label class="toggle"><input type="checkbox" id="opt-rememberpw" onchange="toggleRememberPw()"><div class="toggle-track"></div></label>
+      </div>
+      <button class="opt-export-btn sync-now-btn" id="sync-now-btn" onclick="syncNow()">☁ Sync now</button>
+      <p class="sync-status" id="sync-status"></p>
+      <p class="sync-note" style="margin-top:8px"><a href="#" class="sync-link sync-danger" onclick="disconnectSync(event)">Disconnect sync on this device</a></p>
+    </div>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <form class="search-form" onsubmit="doSearch(event)" action="https://www.google.com/search" method="get">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="search-input" name="q" class="search-input" placeholder="Search Google…" autocomplete="off" autocorrect="off" spellcheck="false">
+  </form>
 </div>
 
 <div class="cat-filter-bar" id="cat-filter-bar"></div>
@@ -498,7 +763,7 @@ body.dark .theme-row-wrap { display: none; }
 </div>
 
 <div class="add-btn-wrap">
-  <button class="add-btn" onclick="openModal()"><span>+</span> Add Event</button>
+  <button class="add-btn" onclick="openModal()"><span>+</span> Add Milestone</button>
 </div>
 
 <div class="undo-toast" id="undo-toast">
@@ -507,14 +772,14 @@ body.dark .theme-row-wrap { display: none; }
 </div>
 
 <div class="footer">
-  <span>v1.0</span>
+  <span>v1.1</span>
   <span>Made by M. Schoener with Claude</span>
 </div>
 
-<!-- Event modal -->
+<!-- Milestone modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
   <div class="modal">
-    <h2 id="modal-title">New Event</h2>
+    <h2 id="modal-title">New Milestone</h2>
     <div class="dup-warning" id="dup-warning">
       <strong>⚠ Possible duplicate</strong>
       <span id="dup-msg"></span>
@@ -525,9 +790,9 @@ body.dark .theme-row-wrap { display: none; }
       </div>
     </div>
     <div class="field" id="field-name">
-      <label>Event Name</label>
+      <label>Milestone Name</label>
       <input type="text" id="inp-name" placeholder="e.g. Summer Holiday" oninput="clearFieldError('field-name')">
-      <div class="field-error-msg" id="err-name">Please enter an event name.</div>
+      <div class="field-error-msg" id="err-name">Please enter a milestone name.</div>
     </div>
     <div class="field" id="field-date">
       <label>Target Date</label>
@@ -542,6 +807,15 @@ body.dark .theme-row-wrap { display: none; }
         <select id="inp-tz"></select>
       </div>
       <p class="hint">Leave time blank to use midnight</p>
+    </div>
+    <div class="field">
+      <label>Recurrence (optional)</label>
+      <select id="inp-recur">
+        <option value="">One-time</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+        <option value="annually">Annually</option>
+      </select>
     </div>
     <div class="field">
       <label>Category</label>
@@ -564,34 +838,63 @@ body.dark .theme-row-wrap { display: none; }
 <!-- Share modal -->
 <div class="modal-overlay" id="share-overlay" onclick="handleShareOverlayClick(event)">
   <div class="modal share-modal">
-    <h2>Share My Timeline</h2>
-    <p class="share-intro">Know someone who'd love their own timeline? Send them the link — they'll get a blank page they can make their own, with no sign-up required.</p>
+    <h2>Share</h2>
 
-    <div class="share-option" onclick="shareViaEmail()">
-      <div class="share-icon">✉</div>
-      <div class="share-option-text">
-        <div class="share-option-title">Send via email</div>
-        <div class="share-option-body">Opens your mail app with a ready-to-send message</div>
+    <!-- Accordion: The app -->
+    <div class="acc-item" id="acc-app">
+      <button class="acc-header" onclick="toggleAcc('app')">
+        <div class="acc-header-left">
+          <span class="acc-title">The app</span>
+          <span class="acc-subtitle">Recommend My Timeline to someone</span>
+        </div>
+        <span class="acc-chevron" id="acc-chev-app">›</span>
+      </button>
+      <div class="acc-body" id="acc-body-app">
+        <p class="share-section-desc">They'll get a blank page to set up as their own — no sign-up needed.</p>
+        <div class="share-option" onclick="shareViaEmail()">
+          <div class="share-icon">✉</div>
+          <div class="share-option-text">
+            <div class="share-option-title">Send via email</div>
+            <div class="share-option-body">Opens your mail app with a ready-to-send message</div>
+          </div>
+          <div class="share-chevron">›</div>
+        </div>
+        <div class="share-option" onclick="copyShareMessage()">
+          <div class="share-icon">💬</div>
+          <div class="share-option-text">
+            <div class="share-option-title">Copy message</div>
+            <div class="share-option-body">Paste into WhatsApp, Slack, iMessage, or any app</div>
+          </div>
+          <div class="share-chevron">›</div>
+        </div>
+        <div class="share-option" onclick="copyShareLink()">
+          <div class="share-icon">🔗</div>
+          <div class="share-option-text">
+            <div class="share-option-title">Copy link only</div>
+            <div class="share-option-body">Just the URL, nothing else</div>
+          </div>
+          <div class="share-chevron" id="share-link-check">›</div>
+        </div>
       </div>
-      <div class="share-chevron">›</div>
     </div>
 
-    <div class="share-option" onclick="copyShareMessage()">
-      <div class="share-icon">💬</div>
-      <div class="share-option-text">
-        <div class="share-option-title">Copy message</div>
-        <div class="share-option-body">Paste into WhatsApp, Slack, iMessage, or any app</div>
+    <!-- Accordion: Your milestones -->
+    <div class="acc-item" id="acc-milestones">
+      <button class="acc-header" onclick="toggleAcc('milestones')">
+        <div class="acc-header-left">
+          <span class="acc-title">Your milestones</span>
+          <span class="acc-subtitle">Share a link others can import</span>
+        </div>
+        <span class="acc-chevron" id="acc-chev-milestones">›</span>
+      </button>
+      <div class="acc-body" id="acc-body-milestones">
+        <p class="share-section-desc">Choose which milestones to include. Anyone who opens the link can import them into their own timeline.</p>
+        <div class="share-checklist" id="share-checklist"></div>
+        <button class="share-copy-btn" id="share-copy-btn" onclick="copyMilestoneLink()">
+          <span id="share-copy-label">Copy milestone link</span>
+          <span id="share-copy-check" style="display:none">✓ Copied</span>
+        </button>
       </div>
-      <div class="share-chevron">›</div>
-    </div>
-
-    <div class="share-option" onclick="copyShareLink()">
-      <div class="share-icon">🔗</div>
-      <div class="share-option-text">
-        <div class="share-option-title">Copy link only</div>
-        <div class="share-option-body">Just the URL, nothing else</div>
-      </div>
-      <div class="share-chevron" id="share-link-check">›</div>
     </div>
 
     <div class="share-feedback" id="share-feedback"></div>
@@ -606,18 +909,18 @@ body.dark .theme-row-wrap { display: none; }
 <div class="modal-overlay" id="help-overlay" onclick="handleHelpOverlayClick(event)">
   <div class="modal help-modal">
     <h2>How to use My Timeline</h2>
-    <p class="help-intro">A personal countdown page that lives in your browser — no account, no internet needed. Add events, watch the time count down. Your data is stored locally, so clearing your browser data or switching browsers will remove your events.</p>
+    <p class="help-intro">A personal countdown page that lives in your browser — no account, no internet needed. Add milestones, watch the time count down. Your data is stored locally, so clearing your browser data or switching browsers will remove your milestones.</p>
     <div class="help-section">
       <div class="help-icon">+</div>
-      <div><div class="help-title">Adding events</div><div class="help-body">Tap <strong>Add Event</strong>, fill in a name and date, optionally a time and category colour, then hit Save.</div></div>
+      <div><div class="help-title">Adding milestones</div><div class="help-body">Tap <strong>Add Milestone</strong>, fill in a name and date, optionally a time and category colour, then hit Save.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">⊙</div>
-      <div><div class="help-title">Pinning</div><div class="help-body">Hover a card to reveal action buttons. <strong>⊙ Pin</strong> keeps an event at the top regardless of date.</div></div>
+      <div><div class="help-title">Pinning</div><div class="help-body">Hover a card to reveal action buttons. <strong>⊙ Pin</strong> keeps a milestone at the top regardless of date.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">✎</div>
-      <div><div class="help-title">Editing &amp; deleting</div><div class="help-body">Hover a card for <strong>✎ edit</strong> and <strong>✕ delete</strong>. Deleted events can be recovered via <strong>Undo</strong> for a few seconds.</div></div>
+      <div><div class="help-title">Editing &amp; deleting</div><div class="help-body">Hover a card for <strong>✎ edit</strong> and <strong>✕ delete</strong>. Deleted milestones can be recovered via <strong>Undo</strong> for a few seconds.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon" style="font-size:0.9rem">●●</div>
@@ -625,7 +928,7 @@ body.dark .theme-row-wrap { display: none; }
     </div>
     <div class="help-section">
       <div class="help-icon">⚙</div>
-      <div><div class="help-title">Options</div><div class="help-body">Change the <strong>count unit</strong>, toggle decimals, hide past events, sort, and switch themes.</div></div>
+      <div><div class="help-title">Options</div><div class="help-body">Change the <strong>count unit</strong>, toggle decimals, hide past milestones, sort, and switch themes.</div></div>
     </div>
     <div class="help-section">
       <div class="help-icon">◐</div>
@@ -633,15 +936,12 @@ body.dark .theme-row-wrap { display: none; }
     </div>
     <div class="help-section">
       <div class="help-icon">📅</div>
-      <div><div class="help-title">Exporting</div><div class="help-body">Download all events as a <strong>.ics</strong> file from <strong>⚙ Options → Export</strong>, importable into Apple Calendar, Google Calendar, and others. One-time snapshot, not a live sync.</div></div>
+      <div><div class="help-title">Exporting</div><div class="help-body">Download all milestones as a <strong>.ics</strong> file from <strong>⚙ Options → Export</strong>, importable into Apple Calendar, Google Calendar, and others. One-time snapshot, not a live sync.</div></div>
     </div>
+
     <div class="help-section">
-      <div class="help-icon">🎉</div>
-      <div><div class="help-title">Celebrations</div><div class="help-body">When a countdown hits zero, confetti fires. Dismiss the event or remove it from the timeline.</div></div>
-    </div>
-    <div class="help-section">
-      <div class="help-icon">🕐</div>
-      <div><div class="help-title">Timezones</div><div class="help-body">Events use your device's local time by default. Pick a specific timezone in the event form when scheduling across zones.</div></div>
+      <div class="help-icon" style="display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M7 8l5-5 5 5"/><path d="M4 14v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/></svg></div>
+      <div><div class="help-title">Sharing</div><div class="help-body">The <strong>share</strong> button has two sections. <strong>Your milestones</strong> — copies a link that lets anyone import your current milestones into their timeline. <strong>The app</strong> — sends a blank My Timeline to a friend so they can set up their own.</div></div>
     </div>
     <div class="modal-btns">
       <button class="btn-save" onclick="toggleHelp()">Got it</button>
@@ -650,6 +950,164 @@ body.dark .theme-row-wrap { display: none; }
 </div>
 
 <script>
+// ── Milestone data sharing ───────────────────────────────────────────────────
+function decodeMilestones(str){
+  try {
+    return JSON.parse(decodeURIComponent(atob(str)));
+  } catch { return null; }
+}
+
+function toggleAcc(id){
+  const item = document.getElementById('acc-' + id);
+  const isOpen = item.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.acc-item').forEach(el => el.classList.remove('open'));
+  // Open clicked if it wasn't already open
+  if(!isOpen){
+    item.classList.add('open');
+    if(id === 'milestones') buildShareChecklist();
+  }
+}
+
+function buildShareChecklist(){
+  const el = document.getElementById('share-checklist');
+  const btn = document.getElementById('share-copy-btn');
+  if(!el) return;
+  el.innerHTML = '';
+  if(!events.length){
+    el.innerHTML = '<div class="share-check-empty">No milestones to share yet.</div>';
+    if(btn) btn.disabled = true;
+    return;
+  }
+  const sorted = [...events].sort((a,b) => parseTarget(a) - parseTarget(b));
+  sorted.forEach(e => {
+    const dateStr = new Date(parseTarget(e)).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const item = document.createElement('label');
+    item.className = 'share-check-item';
+    item.innerHTML = `<input type="checkbox" class="share-chk" data-id="${e.id}" checked>
+      <span class="share-check-name">${escHtml(e.name)}</span>
+      <span class="share-check-date">${dateStr}</span>`;
+    item.querySelector('input').addEventListener('change', updateShareCopyBtn);
+    el.appendChild(item);
+  });
+  updateShareCopyBtn();
+}
+
+function updateShareCopyBtn(){
+  const btn = document.getElementById('share-copy-btn');
+  const checked = document.querySelectorAll('.share-chk:checked').length;
+  if(btn) btn.disabled = checked === 0;
+  // Reset copied state
+  const lbl = document.getElementById('share-copy-label');
+  const chk = document.getElementById('share-copy-check');
+  if(lbl) lbl.style.display = '';
+  if(chk) chk.style.display = 'none';
+}
+
+function copyMilestoneLink(){
+  const checkedIds = new Set([...document.querySelectorAll('.share-chk:checked')].map(x=>x.dataset.id));
+  const selected = events.filter(e => checkedIds.has(e.id));
+  if(!selected.length) return;
+  const data = selected.map(e => ({
+    n: e.name, d: e.date,
+    ...(e.time && { t: e.time }),
+    ...(e.tz && e.tz !== 'local' && { z: e.tz }),
+    ...(e.recur && { r: e.recur }),
+    ...(e.color && { c: e.color }),
+  }));
+  const encoded = btoa(encodeURIComponent(JSON.stringify(data)));
+  const url = SHARE_URL + '#data=' + encoded;
+  navigator.clipboard.writeText(url).then(()=>{
+    document.getElementById('share-copy-label').style.display = 'none';
+    document.getElementById('share-copy-check').style.display = '';
+    showShareFeedback(`Link with ${selected.length} milestone${selected.length>1?'s':''} copied ✓`);
+  }).catch(()=>{ showShareFeedback('Copy failed — try again'); });
+}
+
+// Import flow
+let pendingImport = null;
+
+function checkForSharedData(){
+  const hash = window.location.hash;
+  if(!hash.startsWith('#data=')) return;
+  const encoded = hash.slice(6);
+  const data = decodeMilestones(encoded);
+  if(!data || !data.length) return;
+  pendingImport = data;
+  const count = data.length;
+  document.getElementById('import-title').textContent =
+    count === 1 ? '1 shared milestone' : `${count} shared milestones`;
+  const names = data.slice(0,3).map(e=>e.n).join(', ');
+  document.getElementById('import-desc').textContent =
+    'Import into your timeline? — ' + names + (data.length > 3 ? '…' : '');
+  document.getElementById('import-banner').style.display = 'block';
+  // Clean URL so refreshing doesn't re-trigger
+  history.replaceState(null, '', window.location.pathname);
+}
+
+function resolveImportColor(importedColor){
+  // No colour on imported milestone — assign next unused
+  if(!importedColor) return nextUnusedColor();
+  // Colour is in our palette and either unused or already in use — keep it as-is
+  // (merges into existing category or starts a new one)
+  if(PALETTE.includes(importedColor)){
+    const usedColors = new Set(events.map(e => colorForEvent(e)));
+    // If all 5 palette slots are taken and this colour isn't one of them,
+    // remap to the least-used colour to avoid silent overflow
+    if(usedColors.size >= PALETTE.length && !usedColors.has(importedColor)){
+      // Find palette colour used by fewest events
+      return PALETTE.reduce((best, col) => {
+        const countBest = events.filter(e => colorForEvent(e) === best).length;
+        const countCol  = events.filter(e => colorForEvent(e) === col).length;
+        return countCol < countBest ? col : best;
+      }, PALETTE[0]);
+    }
+    return importedColor;
+  }
+  // Colour not in our palette at all — assign next unused slot
+  return nextUnusedColor();
+}
+
+function confirmImport(){
+  if(!pendingImport) return;
+  let added = 0;
+  pendingImport.forEach(e => {
+    const exists = events.some(x => x.name === e.n && x.date === e.d);
+    if(!exists){
+      const color = resolveImportColor(e.c || null);
+      events.push({
+        id: uid(), name: e.n, date: e.d,
+        time: e.t || null, tz: e.z || null,
+        recur: e.r || null, color,
+        created: Date.now(), updatedAt: Date.now()
+      });
+      added++;
+    }
+  });
+  save(events); buildColorFilterChips(); render();
+  dismissImport();
+  if(added > 0) showImportToast(added);
+}
+
+function dismissImport(){
+  document.getElementById('import-banner').style.display = 'none';
+  pendingImport = null;
+}
+
+function showImportToast(count){
+  document.getElementById('undo-msg').textContent =
+    `${count} milestone${count>1?'s':''} imported`;
+  document.getElementById('undo-toast').classList.add('visible');
+  clearTimeout(undoTimer); undoTimer = setTimeout(hideUndoToast, 4000);
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────
+function doSearch(e){
+  e.preventDefault();
+  const q = document.getElementById('search-input').value.trim();
+  if(q) window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 const PALETTE = ['#c9603a','#4a8fa8','#6a9e5b','#8a6bbf','#c4913a'];
 const STORE_KEY = 'countdown_events_v1';
@@ -657,8 +1115,8 @@ const CAT_KEY   = 'timeline_categories_v1';
 const OPT_KEY   = 'timeline_options_v1';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function uid(){ return Math.random().toString(36).slice(2,10); }
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function uid(){ return (crypto.randomUUID ? crypto.randomUUID().replace(/-/g,'').slice(0,16) : Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)); }
 function pad(n){ return String(n).padStart(2,'0'); }
 
 // ── Storage ───────────────────────────────────────────────────────────────────
@@ -675,14 +1133,14 @@ function saveCategories(){ localStorage.setItem(CAT_KEY, JSON.stringify(categori
 function catName(color){ return categories[color]||''; }
 function abbrevCat(color, max=20){ const n=catName(color); return n.length>max ? n.slice(0,max)+'…' : n; }
 
-function colorForEvent(e){ return e.color || PALETTE[events.findIndex(x=>x.id===e.id) % PALETTE.length]; }
+function colorForEvent(e){ if(e.color) return e.color; const idx=events.findIndex(x=>x.id===e.id); return PALETTE[Math.max(0,idx) % PALETTE.length]; }
 function nextUnusedColor(){ const used=new Set(events.map(e=>colorForEvent(e))); return PALETTE.find(c=>!used.has(c))||PALETTE[0]; }
 function isColorNew(color){ return !events.some(e=>colorForEvent(e)===color); }
 
 function buildCatList(){
   const list=document.getElementById('cat-list'); list.innerHTML='';
   const used=[...new Set(events.map(e=>colorForEvent(e)))];
-  if(!used.length){ list.innerHTML='<p style="font-size:0.78rem;color:var(--muted);padding:4px 0">No events yet.</p>'; return; }
+  if(!used.length){ list.innerHTML='<p style="font-size:0.78rem;color:var(--muted);padding:4px 0">No milestones yet.</p>'; return; }
   used.forEach(color=>{
     const row=document.createElement('div'); row.className='cat-row';
     const dot=document.createElement('div'); dot.className='cat-dot'; dot.style.background=color;
@@ -694,25 +1152,26 @@ function buildCatList(){
 }
 
 // ── Category filter bar ───────────────────────────────────────────────────────
-let hiddenColors = new Set();
+let activeColorFilter = null; // null = show all, string = show only that colour
 
 function buildColorFilterChips(){
   const bar=document.getElementById('cat-filter-bar');
   const usedColors=[...new Set(events.map(e=>colorForEvent(e)))];
-  if(usedColors.length < 2){ bar.classList.remove('visible'); return; }
+  if(usedColors.length < 2){ bar.classList.remove('visible'); activeColorFilter=null; return; }
   bar.classList.add('visible');
   bar.innerHTML='';
   usedColors.forEach(color=>{
     const chip=document.createElement('button');
-    const isHidden=hiddenColors.has(color);
-    chip.className='cfc'+(isHidden?' hidden-color':'');
+    const isActive = activeColorFilter===null || activeColorFilter===color;
+    chip.className='cfc'+(isActive?'':' hidden-color');
     chip.dataset.color=color;
-    if(!isHidden) chip.style.background=color;
+    if(isActive) chip.style.background=color;
     const dot=document.createElement('span'); dot.className='cfc-dot';
     const lbl=document.createElement('span'); lbl.textContent=abbrevCat(color)||'Category';
     chip.appendChild(dot); chip.appendChild(lbl);
     chip.addEventListener('click',()=>{
-      if(hiddenColors.has(color)) hiddenColors.delete(color); else hiddenColors.add(color);
+      // Toggle: clicking active filter clears it; clicking another sets it
+      activeColorFilter = (activeColorFilter===color) ? null : color;
       buildColorFilterChips(); render(true);
     });
     bar.appendChild(chip);
@@ -720,7 +1179,7 @@ function buildColorFilterChips(){
 }
 
 // ── Options / themes / dark mode ──────────────────────────────────────────────
-let opts = { noDecimals:false, decPlaces:5, theme:0, unit:'days', hidePast:false, sortBy:'due', dark:false };
+let opts = { noDecimals:false, decPlaces:5, theme:0, unit:'days', hidePast:false, sortBy:'due', dark:false, showSearchBar:true };
 
 const THEMES = [
   { label:'Parchment', bg:'#faf7f2', grad:'radial-gradient(ellipse at 15% 10%, rgba(255,220,180,0.35) 0%, transparent 55%), radial-gradient(ellipse at 85% 20%, rgba(220,195,255,0.18) 0%, transparent 50%), radial-gradient(ellipse at 50% 90%, rgba(255,200,160,0.2) 0%, transparent 55%)' },
@@ -756,6 +1215,11 @@ function applyTheme(idx){
   document.body.style.backgroundImage=t.grad;
 }
 
+function applySearchBar(){
+  const wrap = document.querySelector('.search-wrap');
+  if(wrap) wrap.style.display = opts.showSearchBar ? '' : 'none';
+}
+
 function toggleDark(){ opts.dark=!opts.dark; applyDark(); saveOptions(); }
 function applyDark(){
   document.body.classList.toggle('dark', opts.dark);
@@ -782,6 +1246,8 @@ function syncFilterChips(){
 function loadOptions(){
   try{ Object.assign(opts, JSON.parse(localStorage.getItem(OPT_KEY))||{}); }catch{}
   document.getElementById('opt-nodec').checked = !opts.noDecimals;
+  document.getElementById('opt-searchbar').checked = opts.showSearchBar !== false;
+  applySearchBar();
   document.getElementById('opt-decplaces').value = opts.decPlaces;
   buildThemeSwatches(opts.theme||0);
   applyDark();
@@ -790,6 +1256,8 @@ function loadOptions(){
 }
 function saveOptions(){
   opts.noDecimals = !document.getElementById('opt-nodec').checked;
+  opts.showSearchBar = document.getElementById('opt-searchbar').checked;
+  applySearchBar();
   opts.decPlaces  = Math.max(1, Math.min(8, parseInt(document.getElementById('opt-decplaces').value)||5));
   localStorage.setItem(OPT_KEY, JSON.stringify(opts));
 }
@@ -798,17 +1266,20 @@ function saveOptions(){
 const SHARE_URL = 'https://schoenerma.github.io/mytimeline/';
 const SHARE_MSG = `Hey! I've been using this little browser page called My Timeline to count down to things I'm looking forward to. You can get your own copy here: ${SHARE_URL}
 
-Just open the link and add your own events — no sign-up needed. You can even set it as your browser start page so you see it every day.`;
+Just open the link and add your own milestones — no sign-up needed. You can even set it as your browser start page so you see it every day.`;
 
 function toggleShare(){
   const overlay=document.getElementById('share-overlay');
   overlay.classList.toggle('open');
   document.getElementById('share-feedback').textContent='';
   document.getElementById('share-link-check').textContent='›';
-  // close others if open
   document.getElementById('options-panel').classList.remove('open');
   document.getElementById('gear-btn').classList.remove('open');
   document.getElementById('help-overlay').classList.remove('open');
+  if(overlay.classList.contains('open')){
+    // Close all accordions on open
+    document.querySelectorAll('.acc-item').forEach(el=>el.classList.remove('open'));
+  }
 }
 function handleShareOverlayClick(e){ if(e.target===document.getElementById('share-overlay')) toggleShare(); }
 
@@ -902,7 +1373,7 @@ function displayTimeStr(e){
 // ── Filter + sort ─────────────────────────────────────────────────────────────
 function filteredSortedEvents(){
   const now=Date.now(); let list=[...events];
-  if(hiddenColors.size>0) list=list.filter(e=>!hiddenColors.has(colorForEvent(e)));
+  if(activeColorFilter!==null) list=list.filter(e=>colorForEvent(e)===activeColorFilter);
   if(opts.hidePast) list=list.filter(e=>parseTarget(e)>=now);
   if(opts.sortBy==='name'){
     list.sort((a,b)=>a.name.localeCompare(b.name));
@@ -928,7 +1399,7 @@ function render(noAnim){
   if(!sorted.length){
     list.classList.remove('has-events'); arrowEl.style.display='none';
     const empty=document.createElement('div'); empty.className='empty-state';
-    empty.innerHTML='<div class="icon">🗓</div><p>No events yet — add one to start counting down.</p>';
+    empty.innerHTML='<div class="icon">🗓</div><p>No milestones yet — add one to start counting down.</p>';
     list.insertBefore(empty, arrowEl);
   } else {
     list.classList.add('has-events'); arrowEl.style.display='flex';
@@ -938,6 +1409,7 @@ function render(noAnim){
       const val=past?zeroHtml():formatCountdown(diff/unitDivisor());
       const displayName=e.name.length>40?e.name.slice(0,40)+'…':e.name;
       const dateStr=new Date(target).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      const recurBadge=e.recur?` <span style="font-size:0.75rem;opacity:0.6" title="Recurring ${e.recur}">↻ ${e.recur}</span>`:'';
       const color=(past&&!isPending)?'var(--muted)':colorForEvent(e);
       const row=document.createElement('div'); row.className='tl-row'; row.dataset.id=e.id;
       row.style.setProperty('--delay', isPending?'0s':`${i*0.04}s`);
@@ -955,7 +1427,7 @@ function render(noAnim){
         </div>
         <div class="card-left">
           <div class="card-title" title="${escHtml(e.name)}">${pinIcon}${escHtml(displayName)}</div>
-          <div class="card-date">${past?'Was':'On'} ${dateStr}${displayTimeStr(e)}</div>
+          <div class="card-date">${past?'Was':'On'} ${dateStr}${displayTimeStr(e)}${recurBadge}</div>
         </div>
         <div class="card-right">
           <div class="countdown-wrap">
@@ -966,13 +1438,14 @@ function render(noAnim){
       row.appendChild(card); list.insertBefore(row, arrowEl);
     });
   }
+  document.querySelector('.add-btn').classList.toggle('invite', events.length===0);
   const nowS=Date.now(), ids=new Set(events.map(e=>e.id));
   wasActive.forEach(id=>{ if(!ids.has(id)) wasActive.delete(id); });
   events.forEach(e=>{ if(parseTarget(e)>nowS&&!celebrating.has(e.id)&&e.id!==pendingCelebrationId) wasActive.add(e.id); });
 }
 
 // ── Pin ───────────────────────────────────────────────────────────────────────
-function togglePin(id){ const e=events.find(x=>x.id===id); if(!e)return; e.pinned=!e.pinned; save(events); render(); }
+function togglePin(id){ const e=events.find(x=>x.id===id); if(!e)return; e.pinned=!e.pinned; e.updatedAt=Date.now(); save(events); render(); }
 
 // ── Celebration ───────────────────────────────────────────────────────────────
 const wasActive=new Set(), celebrating=new Set();
@@ -1008,7 +1481,16 @@ function celebrateEvent(id){
     requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('visible')));
   }, 1300);
 }
-function dismissCelebration(){ const o=document.getElementById('its-time-overlay'); if(o)o.remove(); if(pendingCelebrationId){ pendingCelebrationId=null; render(); } }
+function advanceRecurring(id){
+  const e=events.find(x=>x.id===id); if(!e||!e.recur) return false;
+  const d=new Date(e.date);
+  if(e.recur==='weekly')  d.setDate(d.getDate()+7);
+  if(e.recur==='monthly') d.setMonth(d.getMonth()+1);
+  if(e.recur==='annually')d.setFullYear(d.getFullYear()+1);
+  e.date=d.toISOString().slice(0,10); e.updatedAt=Date.now();
+  save(events); wasActive.add(id); return true;
+}
+function dismissCelebration(){ const o=document.getElementById('its-time-overlay'); if(o)o.remove(); if(pendingCelebrationId){ const id=pendingCelebrationId; pendingCelebrationId=null; advanceRecurring(id); render(); } }
 function removeCelebrated(){ const o=document.getElementById('its-time-overlay'); if(o)o.remove(); if(pendingCelebrationId){ const id=pendingCelebrationId; pendingCelebrationId=null; deleteEvent(id); } }
 
 // ── Tick ──────────────────────────────────────────────────────────────────────
@@ -1031,7 +1513,7 @@ function buildTzSelect(currentTz){
   const sel=document.getElementById('inp-tz'); sel.innerHTML='';
   const localTz=Intl.DateTimeFormat().resolvedOptions().timeZone;
   const localOpt=document.createElement('option'); localOpt.value='local';
-  localOpt.textContent=`Local time (${localTz})`;
+  localOpt.textContent=`Local (${localTz})`;
   if(!currentTz||currentTz==='local') localOpt.selected=true;
   sel.appendChild(localOpt);
   const zones=['UTC','Europe/London','Europe/Paris','Europe/Berlin','Europe/Amsterdam','Europe/Rome','Europe/Madrid','Europe/Stockholm','Europe/Zurich','America/New_York','America/Chicago','America/Denver','America/Los_Angeles','America/Toronto','America/Vancouver','America/Sao_Paulo','Asia/Dubai','Asia/Kolkata','Asia/Singapore','Asia/Tokyo','Asia/Shanghai','Asia/Seoul','Asia/Hong_Kong','Asia/Bangkok','Australia/Sydney','Australia/Melbourne','Pacific/Auckland','Africa/Johannesburg','Africa/Cairo'];
@@ -1041,7 +1523,7 @@ function buildTzSelect(currentTz){
   updateTzColor();
 }
 
-// ── Event modal ───────────────────────────────────────────────────────────────
+// ── Milestone modal ───────────────────────────────────────────────────────────────
 let selectedColor = PALETTE[0];
 
 function updateColorCatLabel(){
@@ -1090,7 +1572,7 @@ function clearFieldError(fieldId){
 function openModal(id){
   editingId=id||null; pendingDupSave=null;
   document.getElementById('dup-warning').classList.remove('visible');
-  document.getElementById('modal-title').textContent=editingId?'Edit Event':'New Event';
+  document.getElementById('modal-title').textContent=editingId?'Edit Milestone':'New Milestone';
   clearFieldError('field-name'); clearFieldError('field-date');
   buildTzSelect(null);
   if(editingId){
@@ -1098,11 +1580,14 @@ function openModal(id){
     document.getElementById('inp-name').value=e.name;
     document.getElementById('inp-date').value=e.date;
     document.getElementById('inp-time').value=e.time||'';
+    document.getElementById('inp-recur').value=e.recur||'';
     buildTzSelect(e.tz||null); buildColorSwatches(e.color||PALETTE[0]);
+    const ei=document.getElementById('inp-newcat'); if(ei) ei.value=catName(e.color||PALETTE[0])||'';
   } else {
     document.getElementById('inp-name').value='';
     document.getElementById('inp-date').value='';
     document.getElementById('inp-time').value='';
+    document.getElementById('inp-recur').value='';
     buildColorSwatches(nextUnusedColor());
     const inp=document.getElementById('inp-newcat'); if(inp) inp.value='';
   }
@@ -1127,56 +1612,73 @@ function saveEvent(){
   const date=document.getElementById('inp-date').value;
   const time=document.getElementById('inp-time').value||null;
   const tz=document.getElementById('inp-tz').value||null;
+  const recur=document.getElementById('inp-recur').value||null;
   let hasError=false;
   if(!name){ document.getElementById('inp-name').classList.add('field-error'); document.getElementById('err-name').classList.add('visible'); hasError=true; }
   if(!date){ document.getElementById('inp-date').classList.add('field-error'); document.getElementById('err-date').classList.add('visible'); hasError=true; }
   if(hasError){ if(!name) document.getElementById('inp-name').focus(); else document.getElementById('inp-date').focus(); return; }
   const dup=findDuplicate(name,date,time,editingId);
   if(dup&&!pendingDupSave){
-    pendingDupSave={name,date,time,tz,color:selectedColor};
+    pendingDupSave={name,date,time,tz,recur,color:selectedColor};
     document.getElementById('dup-msg').textContent=`"${dup.name}" is already scheduled for the same time.`;
     document.getElementById('dup-warning').classList.add('visible'); return;
   }
-  commitSave(name,date,time,tz,selectedColor);
+  commitSave(name,date,time,tz,recur,selectedColor);
 }
 
-function commitSave(name,date,time,tz,color){
+function commitSave(name,date,time,tz,recur,color){
   const newCatInp=document.getElementById('inp-newcat');
   if(newCatInp&&newCatInp.value.trim()&&isColorNew(color)){ categories[color]=newCatInp.value.trim(); saveCategories(); }
   if(editingId){
     const e=events.find(x=>x.id===editingId);
-    e.name=name; e.date=date; e.time=time; e.tz=tz; e.color=color;
+    e.name=name; e.date=date; e.time=time; e.tz=tz; e.recur=recur||null; e.color=color; e.updatedAt=Date.now();
     delete e.offset;
   } else {
-    events.push({ id:uid(), name, date, time, tz, color, created:Date.now() });
+    events.push({ id:uid(), name, date, time, tz, recur:recur||null, color, created:Date.now(), updatedAt:Date.now() });
   }
   save(events); buildColorFilterChips(); render(); closeModal();
 }
 
-function dupKeepBoth(){ if(!pendingDupSave)return; const d=pendingDupSave; pendingDupSave=null; commitSave(d.name,d.date,d.time,d.tz,d.color); }
+function dupKeepBoth(){ if(!pendingDupSave)return; const d=pendingDupSave; pendingDupSave=null; commitSave(d.name,d.date,d.time,d.tz,d.recur,d.color); }
 function dupDiscardNew(){ pendingDupSave=null; document.getElementById('dup-warning').classList.remove('visible'); closeModal(); }
 function dupDiscardExisting(){
   if(!pendingDupSave)return; const d=pendingDupSave; pendingDupSave=null;
   const dup=findDuplicate(d.name,d.date,d.time,editingId);
   if(dup) events.splice(events.findIndex(e=>e.id===dup.id),1);
-  commitSave(d.name,d.date,d.time,d.tz,d.color);
+  commitSave(d.name,d.date,d.time,d.tz,d.recur,d.color);
 }
 
 // ── Delete + undo ─────────────────────────────────────────────────────────────
 let deletedEvent=null, deletedIndex=null, undoTimer=null;
 function deleteEvent(id){
   const row=document.querySelector(`.tl-row[data-id="${id}"]`);
-  if(row){ row.classList.add('removing'); row.addEventListener('animationend',()=>_commitDelete(id),{once:true}); }
-  else _commitDelete(id);
+  if(row){
+    row.classList.add('removing');
+    row.addEventListener('animationend',()=>{
+      row.remove(); // remove from DOM silently before render
+      _commitDelete(id);
+    },{once:true});
+  } else _commitDeleteCore(id);
 }
-function _commitDelete(id){
+function _commitDeleteCore(id){
   const idx=events.findIndex(e=>e.id===id); if(idx===-1)return;
   deletedEvent=events[idx]; deletedIndex=idx; events.splice(idx,1);
-  save(events); buildColorFilterChips(); render(true); showUndoToast(deletedEvent.name);
+  save(events);
+  wasActive.delete(id);
+  buildColorFilterChips();
+  document.querySelector('.add-btn').classList.toggle('invite', events.length===0);
+  if(events.length===0){
+    const list=document.getElementById('event-list'), arrowEl=document.getElementById('tl-arrow');
+    list.classList.remove('has-events'); arrowEl.style.display='none';
+    const empty=document.createElement('div'); empty.className='empty-state';
+    empty.innerHTML='<div class="icon">📅</div><p>No milestones yet — add one to start counting down.</p>';
+    list.insertBefore(empty, arrowEl);
+  }
+  showUndoToast(deletedEvent.name);
 }
 function showUndoToast(name){
   const display=name.length>28?name.slice(0,28)+'…':name;
-  document.getElementById('undo-msg').textContent=`"${display}" deleted`;
+  document.getElementById('undo-msg').textContent=`"${display}" removed`;
   document.getElementById('undo-toast').classList.add('visible');
   clearTimeout(undoTimer); undoTimer=setTimeout(hideUndoToast,5000);
 }
@@ -1190,7 +1692,7 @@ function toICSDate(ts, tz){
   return `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
 }
 function exportICS(){
-  if(!events.length){ alert('No events.'); return; }
+  if(!events.length){ const note=document.querySelector('.export-note'); if(note){ const orig=note.textContent; note.textContent='Nothing to export — add milestones first.'; setTimeout(()=>note.textContent=orig,3000); } return; }
   const now=new Date(), stamp=`${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
   const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//My Timeline//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
   events.forEach(e=>{
@@ -1209,20 +1711,433 @@ function exportICS(){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='my-timeline.ics'; a.click(); URL.revokeObjectURL(a.href);
 }
 
+
+// ── Sync ──────────────────────────────────────────────────────────────────────
+const SYNC_WORKER  = 'https://mytimelinesync.tripletwist-ofm-b48.workers.dev';
+const SYNC_KEY     = 'mt_sync';      // { binId, rememberPw }
+const SYNC_PW_KEY  = 'mt_sync_pw';  // stored only if user opts in
+const TOMBSTONE_KEY = 'mt_tombstones'; // { id: deletedAt }
+
+// ── Crypto helpers (Web Crypto API — no libraries) ────────────────────────────
+async function deriveKey(password, saltHex) {
+  const enc  = new TextEncoder();
+  const salt = hexToBytes(saltHex);
+  const raw  = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' },
+    raw,
+    { name: 'AES-GCM', length: 256 },
+    false, ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptData(plaintext, password) {
+  const saltBytes = crypto.getRandomValues(new Uint8Array(16));
+  const saltHex   = bytesToHex(saltBytes);
+  const key       = await deriveKey(password, saltHex);
+  const iv        = crypto.getRandomValues(new Uint8Array(12));
+  const enc       = new TextEncoder();
+  const cipher    = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext));
+  return {
+    iv:   bytesToB64(iv),
+    data: saltHex + ':' + bytesToB64(new Uint8Array(cipher)),
+    v:    1
+  };
+}
+
+async function decryptData(blob, password) {
+  const sep = blob.data.indexOf(':');
+  if(sep === -1) throw new Error('Invalid encrypted data format');
+  const saltHex   = blob.data.slice(0, sep);
+  const cipherB64 = blob.data.slice(sep + 1);
+  const key    = await deriveKey(password, saltHex);
+  const iv     = b64ToBytes(blob.iv);
+  const cipher = b64ToBytes(cipherB64);
+  const plain  = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
+  return new TextDecoder().decode(plain);
+}
+
+function bytesToHex(b) { return Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join(''); }
+function hexToBytes(h) { const a=new Uint8Array(h.length/2); for(let i=0;i<a.length;i++) a[i]=parseInt(h.slice(i*2,i*2+2),16); return a; }
+function bytesToB64(b) { let s=''; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
+function b64ToBytes(s) { return Uint8Array.from(atob(s), c=>c.charCodeAt(0)); }
+
+// ── Tombstones ────────────────────────────────────────────────────────────────
+function loadTombstones(){ try{ return JSON.parse(localStorage.getItem(TOMBSTONE_KEY)||'{}'); }catch{ return {}; } }
+function saveTombstones(t){ localStorage.setItem(TOMBSTONE_KEY, JSON.stringify(t)); }
+function addTombstone(id){ const t=loadTombstones(); t[id]=Date.now(); saveTombstones(t); }
+
+// ── Sync state helpers ────────────────────────────────────────────────────────
+function loadSyncState(){ try{ return JSON.parse(localStorage.getItem(SYNC_KEY)||'null'); }catch{ return null; } }
+function saveSyncState(s){ localStorage.setItem(SYNC_KEY, JSON.stringify(s)); }
+function loadSyncPw(){ return localStorage.getItem(SYNC_PW_KEY)||''; }
+function saveSyncPw(pw){ localStorage.setItem(SYNC_PW_KEY, pw); }
+function clearSyncPw(){ localStorage.removeItem(SYNC_PW_KEY); }
+
+function initSyncUI(){
+  const state = loadSyncState();
+  document.getElementById('sync-ui-setup').style.display  = state ? 'none'  : '';
+  document.getElementById('sync-ui-active').style.display = state ? ''      : 'none';
+  if(state){
+    document.getElementById('sync-id-display').textContent = state.binId;
+    document.getElementById('opt-rememberpw').checked = !!state.rememberPw;
+  }
+}
+
+function setSyncStatus(msg, type=''){
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  el.textContent = msg;
+  el.className = 'sync-status' + (type ? ' '+type : '');
+}
+
+// ── Core sync: merge local + remote ──────────────────────────────────────────
+async function performSync(binId, password){
+  setSyncStatus('⠋ Syncing…');
+  document.getElementById('sync-now-btn').disabled = true;
+
+  try {
+    // 1. Fetch remote
+    const resp = await fetch(`${SYNC_WORKER}/read/${binId}`);
+    let remoteEvents = [], remoteTombstones = {};
+
+    if(resp.ok){
+      const blob = await resp.json();
+      try {
+        const plain = await decryptData(blob, password);
+        const parsed = JSON.parse(plain);
+        remoteEvents     = parsed.events     || [];
+        remoteTombstones = parsed.tombstones || {};
+      } catch {
+        setSyncStatus('Wrong password or corrupted data.', 'error');
+        document.getElementById('sync-now-btn').disabled = false;
+        return false;
+      }
+    } else if(resp.status !== 404){
+      setSyncStatus('Could not reach sync server.', 'error');
+      document.getElementById('sync-now-btn').disabled = false;
+      return false;
+    }
+
+    // 2. Merge
+    const localTombstones = loadTombstones();
+    const allTombstones   = { ...remoteTombstones, ...localTombstones };
+
+    // Build map of all events keyed by id, keeping newer updatedAt
+    const merged = new Map();
+    [...remoteEvents, ...events].forEach(e => {
+      // Skip if tombstoned
+      if(allTombstones[e.id]) return;
+      const existing = merged.get(e.id);
+      const eTime = e.updatedAt || e.created || 0;
+      const xTime = existing ? (existing.updatedAt || existing.created || 0) : -1;
+      if(!existing || eTime > xTime) merged.set(e.id, e);
+    });
+
+    const mergedEvents = Array.from(merged.values());
+
+    // Prune tombstones older than 90 days
+    const ninetyDaysAgo = Date.now() - 90 * 86400000;
+    Object.keys(allTombstones).forEach(id => { if(allTombstones[id] < ninetyDaysAgo) delete allTombstones[id]; });
+
+    // 3. Push merged state back to cloud
+    const payload = JSON.stringify({ events: mergedEvents, tombstones: allTombstones });
+    const encrypted = await encryptData(payload, password);
+
+    const pushResp = await fetch(`${SYNC_WORKER}/update/${binId}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(encrypted),
+    });
+
+    if(!pushResp.ok){
+      setSyncStatus('Sync failed — could not save.', 'error');
+      document.getElementById('sync-now-btn').disabled = false;
+      return false;
+    }
+
+    // 4. Apply merged events locally
+    events.length = 0;
+    mergedEvents.forEach(e => events.push(e));
+    saveTombstones(allTombstones);
+    save(events);
+    buildColorFilterChips();
+    render();
+
+    const now = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    setSyncStatus(`Last synced at ${now}`, 'ok');
+    document.getElementById('sync-now-btn').disabled = false;
+    return true;
+
+  } catch(e) {
+    setSyncStatus('Sync error — check connection.', 'error');
+    document.getElementById('sync-now-btn').disabled = false;
+    return false;
+  }
+}
+
+// ── Setup flow ────────────────────────────────────────────────────────────────
+function openSyncSetup(){
+  document.getElementById('setup-pw').value  = '';
+  document.getElementById('setup-pw2').value = '';
+  document.getElementById('setup-err').textContent = '';
+  document.getElementById('sync-setup-overlay').classList.add('open');
+  document.getElementById('options-panel').classList.remove('open');
+  document.getElementById('gear-btn').classList.remove('open');
+  setTimeout(()=>document.getElementById('setup-pw').focus(), 100);
+}
+function closeSyncSetup(){ document.getElementById('sync-setup-overlay').classList.remove('open'); }
+
+async function submitSyncSetup(){
+  const pw  = document.getElementById('setup-pw').value;
+  const pw2 = document.getElementById('setup-pw2').value;
+  const errEl = document.getElementById('setup-err');
+  if(pw.length < 8){ errEl.textContent = 'Password must be at least 8 characters.'; return; }
+  if(pw !== pw2)   { errEl.textContent = 'Passwords do not match.'; return; }
+
+  const btn = document.getElementById('setup-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="sync-spinner"></span>Creating…';
+
+  try {
+    // Encrypt current milestones + empty tombstones
+    const payload   = JSON.stringify({ events, tombstones: loadTombstones() });
+    const encrypted = await encryptData(payload, pw);
+
+    const resp = await fetch(`${SYNC_WORKER}/create`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(encrypted),
+    });
+
+    if(!resp.ok) throw new Error('create failed');
+    const { binId } = await resp.json();
+
+    // Save state
+    saveSyncState({ binId, rememberPw: true });
+    saveSyncPw(pw);
+    closeSyncSetup();
+    initSyncUI();
+    setSyncStatus('Sync set up successfully ✓', 'ok');
+
+  } catch {
+    errEl.textContent = 'Could not create sync — check connection.';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Create sync';
+  }
+}
+
+// ── Connect flow ──────────────────────────────────────────────────────────────
+function openSyncConnect(e){ e.preventDefault();
+  document.getElementById('connect-id').value = '';
+  document.getElementById('connect-pw').value = '';
+  document.getElementById('connect-err').textContent = '';
+  document.getElementById('sync-connect-overlay').classList.add('open');
+  document.getElementById('options-panel').classList.remove('open');
+  document.getElementById('gear-btn').classList.remove('open');
+  setTimeout(()=>document.getElementById('connect-id').focus(), 100);
+}
+function closeSyncConnect(){ document.getElementById('sync-connect-overlay').classList.remove('open'); }
+
+async function submitSyncConnect(){
+  const binId = document.getElementById('connect-id').value.trim();
+  const pw    = document.getElementById('connect-pw').value;
+  const errEl = document.getElementById('connect-err');
+  if(!/^[a-f0-9]{24}$/i.test(binId)){ errEl.textContent = 'Sync ID must be a 24-character code.'; return; }
+  if(!pw){ errEl.textContent = 'Please enter your password.'; return; }
+
+  const btn = document.getElementById('connect-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="sync-spinner"></span>Connecting…';
+
+  try {
+    // Try to read + decrypt — verifies both ID and password
+    const resp = await fetch(`${SYNC_WORKER}/read/${binId}`);
+    if(resp.status === 404){ errEl.textContent = 'Sync ID not found.'; btn.disabled=false; btn.innerHTML='Connect & sync'; return; }
+    if(!resp.ok) throw new Error();
+    const blob = await resp.json();
+    let parsed;
+    try { parsed = JSON.parse(await decryptData(blob, pw)); }
+    catch { errEl.textContent = 'Incorrect password.'; btn.disabled=false; btn.innerHTML='Connect & sync'; return; }
+
+    // Merge remote into local
+    saveSyncState({ binId, rememberPw: true });
+    saveSyncPw(pw);
+    closeSyncConnect();
+    initSyncUI();
+
+    // Full merge sync
+    await performSync(binId, pw);
+
+  } catch {
+    errEl.textContent = 'Could not connect — check your connection.';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Connect &amp; sync';
+  }
+}
+
+// ── Sync now button ───────────────────────────────────────────────────────────
+// Inline password prompt (replaces browser prompt() which blocks the tab)
+function showSyncPwPrompt(callback){
+  const existing = document.getElementById('sync-pw-prompt-overlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'sync-pw-prompt-overlay';
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `<div class="modal" style="max-width:340px">
+    <h2 style="font-size:1.2rem;margin-bottom:16px">Enter sync password</h2>
+    <div class="sync-field">
+      <div class="sync-pw-wrap">
+        <input type="password" id="sync-pw-prompt-input" placeholder="Your sync password" autocomplete="current-password">
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="spp-cancel">Cancel</button>
+      <button class="btn-save" id="spp-confirm">Confirm</button>
+    </div>
+  </div>`;
+  const inp = () => document.getElementById('sync-pw-prompt-input');
+  const confirm = () => { const pw=inp().value; overlay.remove(); callback(pw); };
+  const cancel  = () => overlay.remove();
+  overlay.addEventListener('click', e => { if(e.target===overlay) cancel(); });
+  document.body.appendChild(overlay);
+  overlay.querySelector('#spp-cancel').addEventListener('click', cancel);
+  overlay.querySelector('#spp-confirm').addEventListener('click', confirm);
+  overlay.querySelector('#sync-pw-prompt-input').addEventListener('keydown', e => {
+    if(e.key==='Enter') confirm();
+    if(e.key==='Escape') cancel();
+  });
+  requestAnimationFrame(()=>{ overlay.classList.add('open'); inp().focus(); });
+}
+
+async function syncNow(){
+  const state = loadSyncState();
+  if(!state) return;
+  let pw = loadSyncPw();
+  if(!pw){
+    showSyncPwPrompt(async (pw2) => {
+      if(!pw2) return;
+      if(state.rememberPw) saveSyncPw(pw2);
+      await performSync(state.binId, pw2);
+    });
+    return;
+  }
+  await performSync(state.binId, pw);
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function toggleRememberPw(){
+  const state = loadSyncState();
+  if(!state) return;
+  const remember = document.getElementById('opt-rememberpw').checked;
+  state.rememberPw = remember;
+  saveSyncState(state);
+  if(remember){
+    showSyncPwPrompt((pw) => { if(pw) saveSyncPw(pw); });
+  } else {
+    clearSyncPw();
+  }
+}
+
+function copySyncId(){
+  const state = loadSyncState();
+  if(!state) return;
+  navigator.clipboard.writeText(state.binId).then(()=>{
+    const btn = document.querySelector('.sync-copy-id');
+    if(btn){ btn.textContent='✓'; setTimeout(()=>btn.textContent='⧉', 1500); }
+  });
+}
+
+function disconnectSync(e){ e.preventDefault();
+  if(!confirm('Disconnect sync on this device? Your cloud data will not be deleted.')) return;
+  localStorage.removeItem(SYNC_KEY);
+  clearSyncPw();
+  initSyncUI();
+  setSyncStatus('');
+}
+
+function togglePwVis(inputId, btn){
+  const inp = document.getElementById(inputId);
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  btn.textContent = show ? 'Hide' : 'Show';
+}
+
+// _commitDelete: records tombstone then runs core logic
+function _commitDelete(id){
+  addTombstone(id);
+  _commitDeleteCore(id);
+}
+
 // ── Date display ──────────────────────────────────────────────────────────────
 function updateDate(){ document.getElementById('current-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
 
 // ── Keyboard shortcuts ────────────────────────────────────────────────────────
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); document.getElementById('help-overlay').classList.remove('open'); document.getElementById('share-overlay').classList.remove('open'); }
+  if(e.key==='Escape'){ closeModal(); document.getElementById('help-overlay').classList.remove('open'); document.getElementById('share-overlay').classList.remove('open'); closeSyncSetup(); closeSyncConnect(); const pp=document.getElementById('sync-pw-prompt-overlay'); if(pp) pp.remove(); }
   if(e.key==='Enter'&&document.getElementById('modal-overlay').classList.contains('open')) saveEvent();
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-loadOptions(); loadCategories(); updateDate();
+loadOptions(); loadCategories(); updateDate(); checkForSharedData(); initSyncUI();
+document.getElementById('search-input').focus();
 buildColorFilterChips(); render();
 events.filter(e=>parseTarget(e)>Date.now()).forEach(e=>wasActive.add(e.id));
 setInterval(tick, 100); setInterval(updateDate, 60000);
 </script>
+<!-- Sync Setup Modal -->
+<div class="modal-overlay" id="sync-setup-overlay" onclick="if(event.target===this)closeSyncSetup()">
+  <div class="modal">
+    <h2>Set up sync</h2>
+    <div class="sync-warn">⚠ Important: Your Sync ID and password are the only way to access your data on another device. There is no recovery option if you forget them. Please save them somewhere safe.</div>
+    <div class="sync-field">
+      <label>Choose a password</label>
+      <div class="sync-pw-wrap">
+        <input type="password" id="setup-pw" placeholder="At least 8 characters" autocomplete="new-password">
+        <button class="sync-pw-toggle" onclick="togglePwVis('setup-pw',this)" type="button">Show</button>
+      </div>
+    </div>
+    <div class="sync-field">
+      <label>Confirm password</label>
+      <div class="sync-pw-wrap">
+        <input type="password" id="setup-pw2" placeholder="Repeat password" autocomplete="new-password">
+        <button class="sync-pw-toggle" onclick="togglePwVis('setup-pw2',this)" type="button">Show</button>
+      </div>
+    </div>
+    <p class="sync-status error" id="setup-err" style="margin-bottom:10px;min-height:1em"></p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeSyncSetup()">Cancel</button>
+      <button class="btn-save" id="setup-submit" onclick="submitSyncSetup()">Create sync</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sync Connect Modal -->
+<div class="modal-overlay" id="sync-connect-overlay" onclick="if(event.target===this)closeSyncConnect()">
+  <div class="modal">
+    <h2>Connect device</h2>
+    <p class="sync-note" style="margin-bottom:14px">Enter your Sync ID and password to connect this device to an existing timeline.</p>
+    <div class="sync-field">
+      <label>Sync ID</label>
+      <input type="text" id="connect-id" placeholder="24-character Sync ID" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="sync-field">
+      <label>Password</label>
+      <div class="sync-pw-wrap">
+        <input type="password" id="connect-pw" placeholder="Your sync password" autocomplete="current-password">
+        <button class="sync-pw-toggle" onclick="togglePwVis('connect-pw',this)" type="button">Show</button>
+      </div>
+    </div>
+    <p class="sync-status error" id="connect-err" style="margin-bottom:10px;min-height:1em"></p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeSyncConnect()">Cancel</button>
+      <button class="btn-save" id="connect-submit" onclick="submitSyncConnect()">Connect &amp; sync</button>
+    </div>
+  </div>
+</div>
+
+
 </body>
 </html>
