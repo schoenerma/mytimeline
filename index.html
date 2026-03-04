@@ -2155,8 +2155,6 @@ document.addEventListener('keydown', e=>{
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadOptions(); loadCategories(); updateDate(); checkForSharedData(); initSyncUI();
 buildColorFilterChips(); render();
-// Return focus to browser address bar rather than capturing it
-if(document.activeElement) document.activeElement.blur();
 events.filter(e=>parseTarget(e)>Date.now()).forEach(e=>wasActive.add(e.id));
 setInterval(tick, 100); setInterval(updateDate, 60000);
 </script>
