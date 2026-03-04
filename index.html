@@ -1119,7 +1119,15 @@ function showImportToast(count){
 function doSearch(e){
   e.preventDefault();
   const q = document.getElementById('search-input').value.trim();
-  if(q) window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+  if(!q) return;
+  // If it looks like a URL, navigate directly
+  if(/^https?:\/\//i.test(q)){
+    window.location.href = q;
+  } else if(/^[a-zA-Z0-9]([a-zA-Z0-9-]*\.)+[a-zA-Z]{2,}(\/.*)?$/.test(q) && !q.includes(' ')){
+    window.location.href = 'https://' + q;
+  } else {
+    window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+  }
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
