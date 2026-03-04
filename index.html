@@ -388,6 +388,8 @@ body.dark .card { background: #363640; }
 .sync-status.error { color: var(--danger); }
 .sync-status.ok { color: #5a9e6b; }
 body.dark .sync-status.ok { color: #7cc48a; }
+body.dark .sync-status.ok { color: #7cc48a; }
+body.dark .sync-status.ok { color: #7cc48a; }
 
 /* Sync modals */
 .sync-field { margin-bottom: 14px; }
@@ -494,9 +496,21 @@ body.dark .sync-warn { background: #2a2310; border-color: #6a5010; color: #c8a84
 .its-time-overlay .its-time-remove:hover { background: rgba(220,80,80,0.25); border-color: rgba(220,80,80,0.8); }
 
 /* ── Empty state ── */
-.empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty-state { text-align: center; padding: 48px 20px 36px; color: var(--muted); }
 .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
-.empty-state p { font-size: 0.9rem; }
+.empty-state .empty-title { font-family: 'DM Serif Display', serif; font-size: 1.3rem; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+.empty-state .empty-sub { font-size: 0.88rem; margin-bottom: 24px; }
+.empty-suggestions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.suggest-chip {
+  padding: 8px 16px; border-radius: 50px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 500; cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.15s, border-color 0.15s, transform 0.12s, color 0.15s;
+  white-space: nowrap;
+}
+.suggest-chip:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 
 /* ── Modal shared ── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(26,23,20,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 500; padding: 20px; }
@@ -1390,6 +1404,60 @@ function filteredSortedEvents(){
   return list;
 }
 
+// ── Empty state suggestions ───────────────────────────────────────────────────
+const SUGGESTIONS = [
+  { label: 'Birthday 🎂',  name: 'Birthday',  date: null },
+  { label: 'Holiday ✈️',   name: 'Holiday',   date: null },
+  { label: 'Weekend 🎉',   name: 'Weekend',   date: 'weekend' },
+  { label: 'Christmas 🎄', name: 'Christmas', date: 'christmas' },
+  { label: 'New Year 🥂',  name: 'New Year',  date: 'newyear' },
+  { label: 'Something else ✨',  name: '',          date: null },
+];
+
+function nextWeekend(){
+  const d = new Date(), day = d.getDay();
+  d.setDate(d.getDate() + (day === 6 ? 7 : 6 - day));
+  return d.toISOString().slice(0, 10);
+}
+function nextChristmas(){
+  const now = new Date(), y = now.getFullYear();
+  const xmas = new Date(y, 11, 25);
+  return (xmas > now ? xmas : new Date(y + 1, 11, 25)).toISOString().slice(0, 10);
+}
+function nextNewYear(){
+  return new Date(new Date().getFullYear() + 1, 0, 1).toISOString().slice(0, 10);
+}
+function resolveDate(key){
+  if(key === 'weekend')   return nextWeekend();
+  if(key === 'christmas') return nextChristmas();
+  if(key === 'newyear')   return nextNewYear();
+  return null;
+}
+
+function buildEmptyState(){
+  const chips = SUGGESTIONS.map(s =>
+    '<button class="suggest-chip" data-label="' + s.label + '">' + s.label + '</button>'
+  ).join('');
+  return '<div class="icon">🗓</div>' +
+    '<div class="empty-title">What are you looking forward to?</div>' +
+    '<p class="empty-sub">Add your first milestone to start counting down.</p>' +
+    '<div class="empty-suggestions">' + chips + '</div>';
+}
+
+function suggestionClick(label){
+  const s = SUGGESTIONS.find(x => x.label === label);
+  if(!s) return;
+  openModal();
+  setTimeout(() => {
+    if(s.name) document.getElementById('inp-name').value = s.name;
+    const date = resolveDate(s.date);
+    if(date) document.getElementById('inp-date').value = date;
+    if(!s.name)    document.getElementById('inp-name').focus();
+    else if(!date) document.getElementById('inp-date').focus();
+    else           document.getElementById('inp-name').focus();
+  }, 120);
+}
+
 // ── Render ────────────────────────────────────────────────────────────────────
 function render(noAnim){
   const list=document.getElementById('event-list'), arrowEl=document.getElementById('tl-arrow');
@@ -1399,10 +1467,12 @@ function render(noAnim){
   if(!sorted.length){
     list.classList.remove('has-events'); arrowEl.style.display='none';
     const empty=document.createElement('div'); empty.className='empty-state';
-    empty.innerHTML='<div class="icon">🗓</div><p>No milestones yet — add one to start counting down.</p>';
+    empty.innerHTML=buildEmptyState();
+    empty.addEventListener('click', e => {
+      const chip = e.target.closest('.suggest-chip');
+      if(chip) suggestionClick(chip.dataset.label);
+    });
     list.insertBefore(empty, arrowEl);
-  } else {
-    list.classList.add('has-events'); arrowEl.style.display='flex';
     sorted.forEach((e,i)=>{
       const target=parseTarget(e), now=Date.now(), diff=target-now;
       const past=diff<0, isPending=e.id===pendingCelebrationId;
@@ -1671,12 +1741,14 @@ function _commitDeleteCore(id){
     const list=document.getElementById('event-list'), arrowEl=document.getElementById('tl-arrow');
     list.classList.remove('has-events'); arrowEl.style.display='none';
     const empty=document.createElement('div'); empty.className='empty-state';
-    empty.innerHTML='<div class="icon">📅</div><p>No milestones yet — add one to start counting down.</p>';
+    empty.innerHTML=buildEmptyState();
+    empty.addEventListener('click', e => {
+      const chip = e.target.closest('.suggest-chip');
+      if(chip) suggestionClick(chip.dataset.label);
+    });
     list.insertBefore(empty, arrowEl);
   }
   showUndoToast(deletedEvent.name);
-}
-function showUndoToast(name){
   const display=name.length>28?name.slice(0,28)+'…':name;
   document.getElementById('undo-msg').textContent=`"${display}" removed`;
   document.getElementById('undo-toast').classList.add('visible');
@@ -1974,7 +2046,7 @@ async function submitSyncConnect(){
     errEl.textContent = 'Could not connect — check your connection.';
   } finally {
     btn.disabled = false;
-    btn.innerHTML = 'Connect &amp; sync';
+    btn.innerHTML = 'Connect & sync';
   }
 }
 
@@ -2082,7 +2154,6 @@ document.addEventListener('keydown', e=>{
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadOptions(); loadCategories(); updateDate(); checkForSharedData(); initSyncUI();
-document.getElementById('search-input').focus();
 buildColorFilterChips(); render();
 events.filter(e=>parseTarget(e)>Date.now()).forEach(e=>wasActive.add(e.id));
 setInterval(tick, 100); setInterval(updateDate, 60000);
