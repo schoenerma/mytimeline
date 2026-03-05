@@ -1992,7 +1992,13 @@ async function submitSyncSetup(){
       body:    JSON.stringify(encrypted),
     });
 
-    if(!resp.ok) throw new Error('create failed');
+    if(!resp.ok){
+      let msg = 'Could not create sync — check connection.';
+      try { const e = await resp.json(); if(e.error) msg = e.error; } catch {}
+      errEl.textContent = msg;
+      btn.disabled = false; btn.innerHTML = 'Create sync';
+      return;
+    }
     const { binId } = await resp.json();
 
     // Save state
