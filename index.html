@@ -1481,6 +1481,8 @@ function render(noAnim){
       if(chip) suggestionClick(chip.dataset.label);
     });
     list.insertBefore(empty, arrowEl);
+  } else {
+    list.classList.add('has-events'); arrowEl.style.display='flex';
     sorted.forEach((e,i)=>{
       const target=parseTarget(e), now=Date.now(), diff=target-now;
       const past=diff<0, isPending=e.id===pendingCelebrationId;
@@ -2162,9 +2164,9 @@ document.addEventListener('keydown', e=>{
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadOptions(); loadCategories(); updateDate(); checkForSharedData(); initSyncUI();
-document.getElementById('search-input').focus();
 buildColorFilterChips(); render();
 events.filter(e=>parseTarget(e)>Date.now()).forEach(e=>wasActive.add(e.id));
+setTimeout(()=>document.getElementById('search-input').focus(), 50);
 setInterval(tick, 100); setInterval(updateDate, 60000);
 </script>
 <!-- Sync Setup Modal -->
